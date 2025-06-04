@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Retour vers le Futur - Dufetelle Augustin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script>
+    AFRAME.registerComponent('delorean-control', {
+      init: function () {
+        let el = this.el;
+        let position = { x: 10, y: 0.6, z: -6 };
+        let rotationY = 90;
+
+        const updatePosition = (dir) => {
+          const rad = rotationY * Math.PI / 180;
+          const step = dir === 'forward' ? -1 : 1;
+          position.x += Math.sin(rad) * step;
+          position.z += Math.cos(rad) * step;
+          el.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
+        };
+
+        document.querySelector("#btn-forward").addEventListener('click', () => updatePosition('forward'));
+        document.querySelector("#btn-backward").addEventListener('click', () => updatePosition('backward'));
+        document.querySelector("#btn-left").addEventListener('click', () => {
+          rotationY += 15;
+          el.setAttribute('rotation', `0 ${rotationY} 0`);
+        });
+        document.querySelector("#btn-right").addEventListener('click', () => {
+          rotationY -= 15;
+          el.setAttribute('rotation', `0 ${rotationY} 0`);
+        });
+
+        const music = document.querySelector("#theme");
+        let playing = false;
+        document.querySelector("#btn-music").addEventListener('click', () => {
+          if (playing) {
+            music.pause();
+            document.querySelector("#btn-music").innerText = "🎵 Activer Musique";
+          } else {
+            music.play();
+            document.querySelector("#btn-music").innerText = "⏸️ Pause Musique";
+          }
+          playing = !playing;
+        });
+      }
+    });
+
+    AFRAME.registerComponent('play-on-click', {
+      init: function () {
+        this.el.addEventListener('click', () => {
+          const video = document.querySelector('#bttf-video');
+          if (video.paused) {
+            video.play();
+          } else {
+            video.pause();
+          }
+        });
+      }
+    });
+  </script>
+  <style>
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 12px;
+      border-radius: 8px;
+    }
+    #controls button {
+      background-color: #ffcc00;
+      border: none;
+      padding: 10px 15px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #controls button:hover {
+      background-color: #ffaa00;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <button id="btn-music">🎵 Activer Musique</button>
+    <button id="btn-forward">⬆️ Avancer</button>
+    <button id="btn-backward">⬇️ Reculer</button>
+    <button id="btn-left">⬅️ Tourner à gauche</button>
+    <button id="btn-right">➡️ Tourner à droite</button>
+  </div>
+
+  <a-scene>
+    <a-assets>
+      <a-asset-item id="delorean-model" src="models/delorean.glb"></a-asset-item>
+      <a-asset-item id="doc-model" src="models/doc.glb"></a-asset-item>
+      <a-asset-item id="marty-model" src="models/marty.glb"></a-asset-item>
+      <img id="sky" src="images/hillvalley360.jpg">
+      <img id="sol-texture" src="textures/sol.jpg">
+      <img id="affiche" src="images/affiche.jpg">
+      <audio id="theme" src="sounds/theme.mp3"></audio>
+      <audio id="delorean-sound" src="sounds/delorean.mp3"></audio>
+      <video id="bttf-video" src="videos/bttf.mp4" crossorigin="anonymous"></video>
+    </a-assets>
+
+    <a-sky src="#sky" rotation="0 -130 0"></a-sky>
+    <a-plane src="#sol-texture" position="0 -0.05 0" rotation="-90 0 0" width="100" height="100" repeat="10 10"></a-plane>
+    <a-entity sound="src: #theme; autoplay: false; loop: true; positional: false"></a-entity>
+
+    <a-video src="#bttf-video"
+             position="0 2 -4"
+             width="6" height="3.5"
+             play-on-click
+             gesture-handler>
+    </a-video>
+
+    <a-entity id="delorean"
+              gltf-model="#delorean-model"
+              position="10 0.6 -6"
+              rotation="0 90 0"
+              scale="2.2 2.2 2.2"
+              delorean-control
+              sound="src: #delorean-sound; on: click">
+    </a-entity>
+
+    <a-entity gltf-model="#doc-model"
+              position="-6 0 -6"
+              scale="3.2 3.2 3.2"
+              animation="property: rotation; to: 0 60 0; dir: alternate; dur: 2000; loop: true">
+    </a-entity>
+
+    <a-entity gltf-model="#marty-model"
+              position="6 0 -6"
+              scale="1.4 1.4 1.4"
+              animation__bounce="property: position; dir: alternate; dur: 400; loop: true; to: 6 0.5 -6"
+              animation__twist="property: rotation; dir: alternate; dur: 400; loop: true; to: 0 -20 0">
+    </a-entity>
+
+    <a-image src="#affiche" position="0 2 -20" width="3" height="4.5"></a-image>
+
+    <a-text value="Retour vers le Futur - Dufetelle Augustin"
+            position="0 4 -10" width="12" color="yellow" align="center"></a-text>
+  </a-scene>
+</body>
+</html>
